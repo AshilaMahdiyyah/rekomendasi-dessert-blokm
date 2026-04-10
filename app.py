@@ -8,7 +8,7 @@ st.title("Sistem Rekomendasi Dessert di Blok M")
 # load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("/content/drive/MyDrive/TA/dataset_with_category.csv")
+    df = pd.read_csv("dataset_with_category.csv")
     return df
 
 df = load_data()
