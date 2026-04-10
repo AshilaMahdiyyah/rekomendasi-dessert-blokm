@@ -61,37 +61,46 @@ rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, 4.0)
 # ===== BUTTON =====
 if st.button("🔍 Cari Rekomendasi"):
 
-    filtered_df = df.copy()
+    with st.spinner("Mencari rekomendasi..."):
 
-    if menu:
-        filtered_df = filtered_df[
-            filtered_df['menu_category'].apply(
-                lambda x: any(m.lower().replace(" ", "_") in x for m in menu)
-            )
-        ]
+        filtered_df = df.copy()
 
-    if flavor:
-        filtered_df = filtered_df[
-            filtered_df['flavor_category'].apply(
-                lambda x: any(f.lower().replace(" ", "_") in x for f in flavor)
-            )
-        ]
+        if menu:
+            filtered_df = filtered_df[
+                filtered_df['menu_category'].apply(
+                    lambda x: any(m.lower().replace(" ", "_") in x for m in menu)
+                )
+            ]
 
-    if price != "All":
-        filtered_df = filtered_df[filtered_df['range_price'] == price]
+        if flavor:
+            filtered_df = filtered_df[
+                filtered_df['flavor_category'].apply(
+                    lambda x: any(f.lower().replace(" ", "_") in x for f in flavor)
+                )
+            ]
 
-    if dine != "All":
-        filtered_df = filtered_df[filtered_df['dine_option'] == dine]
+        if price != "All":
+            filtered_df = filtered_df[filtered_df['range_price'] == price]
 
-    filtered_df = filtered_df[filtered_df['avgRating'] >= rating]
+        if dine != "All":
+            filtered_df = filtered_df[filtered_df['dine_option'] == dine]
 
-    st.write("Jumlah kandidat:", len(filtered_df))
+        filtered_df = filtered_df[filtered_df['avgRating'] >= rating]
 
-    top_result = filtered_df.sort_values(
-        by="avgRating", ascending=False
-    ).head(5)
+        # ===== HANDLE KOSONG =====
+        if filtered_df.empty:
+            st.warning("Tidak ditemukan hasil. Menampilkan rekomendasi umum.")
 
-    st.subheader("Top 5 Rekomendasi")
-    st.dataframe(
-        top_result[['nama_tempat','avgRating','range_price']]
-    )
+            filtered_df = df.sort_values(
+                by="avgRating", ascending=False
+            ).head(5)
+
+        else:
+            filtered_df = filtered_df.sort_values(
+                by="avgRating", ascending=False
+            ).head(5)
+
+        st.subheader("Top 5 Rekomendasi")
+        st.dataframe(
+            filtered_df[['nama_tempat','avgRating','range_price']]
+        )
