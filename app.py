@@ -13,6 +13,15 @@ def load_data():
 
 df = load_data()
 
+# ===== FIX RATING TYPE =====
+df['avgRating'] = (
+    df['avgRating']
+    .astype(str)
+    .str.replace(",", ".", regex=False)
+)
+
+df['avgRating'] = pd.to_numeric(df['avgRating'], errors='coerce')
+
 # ===== PREPROCESS LIST STRING =====
 for col in ['menu_category', 'flavor_category']:
     df[col] = df[col].apply(
