@@ -24,7 +24,6 @@ def get_rekomendasi(menu, flavor, price, dine, rating, top_n=10):
 
     # similarity
     sim = cosine_similarity(item_profile, user_vec).flatten()
-    df["similarity"] = sim
 
     # feature engineering
     df["rating_norm"] = df["avgRating"] / 5
