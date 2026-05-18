@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 # LOAD DATA
-df_menu = pd.read_csv("/content/drive/MyDrive/TA/dataset_with_menu_recommendation.csv")
+df_menu = pd.read_csv("dataset_with_menu_recommendation (1).csv")
 
 
 # LOAD MODEL
