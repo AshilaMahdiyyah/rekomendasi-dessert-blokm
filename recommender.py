@@ -12,6 +12,9 @@ df_menu = pd.read_csv("df_menu_final.csv")
 # LOAD MODEL
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
 item_profile = pickle.load(open("item_profile.pkl", "rb"))
+mlb_menu = pickle.load(open("mlb_menu.pkl", "rb"))
+mlb_flavor = pickle.load(open("mlb_flavor.pkl", "rb"))
+scaler = pickle.load(open("scaler.pkl", "rb"))
 
 
 def get_rekomendasi(menu, flavor, price, dine, rating, top_n=10):
