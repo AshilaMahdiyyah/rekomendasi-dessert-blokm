@@ -4,7 +4,7 @@ import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 
 # LOAD DATA
-df_menu = pd.read_csv("df_menu_final.csv").reset_index(drop=True)
+df_menu = pd.read_csv("df_menu_final.csv")
 
 # LOAD MODEL
 tfidf = pickle.load(open("tfidf.pkl", "rb"))
