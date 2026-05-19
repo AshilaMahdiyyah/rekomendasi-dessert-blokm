@@ -1,10 +1,9 @@
-
 import streamlit as st
 
 from recommender import get_rekomendasi
 
 
-st.title("Dessert Recommendation System")
+st.title("Sistem Rekomendasi Dessert di Blok M")
 
 menu = st.selectbox(
     "Pilih Menu",
