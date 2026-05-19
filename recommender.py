@@ -1,34 +1,61 @@
-
 import pandas as pd
-import pickle
+import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 
-# LOAD DATA
-df_menu = pd.read_csv("df_with_menu.csv")
+# =====================================================
+# LOAD DATA & MODEL
+# =====================================================
 
-# LOAD MODEL
-tfidf = pickle.load(open("tfidf.pkl", "rb"))
-item_profile = pickle.load(open("item_profile.pkl", "rb"))
-mlb_menu = pickle.load(open("mlb_menu.pkl", "rb"))
-mlb_flavor = pickle.load(open("mlb_flavor.pkl", "rb"))
-scaler = pickle.load(open("scaler.pkl", "rb"))
+df_menu = pd.read_csv("dataset_final.csv")
 
+tfidf = joblib.load("tfidf.pkl")
 
-def get_rekomendasi(menu, flavor, price, dine, rating, top_n=10):
+item_profile = joblib.load("item_profile.pkl")
 
-    # user query
+# =====================================================
+# FUNCTION REKOMENDASI
+# =====================================================
+
+def get_rekomendasi(
+    menu,
+    flavor,
+    price,
+    dine,
+    rating,
+    top_n=10
+):
+
+    # =====================================================
+    # 1. USER QUERY
+    # =====================================================
+
     user_query = f"{menu} {flavor}"
+
     user_vec = tfidf.transform([user_query])
 
-    df = df_menu.copy().reset_index(drop=True)
+    df = df_menu.copy()
 
-    # similarity
-    sim = cosine_similarity(item_profile, user_vec).flatten()
+    # =====================================================
+    # 2. HITUNG SIMILARITY
+    # =====================================================
 
-    # feature engineering
-    df["rating_norm"] = df["avgRating"] / 5
-    df["price_match"] = (df["range_price"] == price).astype(int)
+    df["similarity"] = cosine_similarity(
+        item_profile,
+        user_vec
+    ).flatten()
 
+    # =====================================================
+    # 3. NORMALISASI FEATURE
+    # =====================================================
+
+    df["rating_norm"] = df["avgRating"] / 5.0
+
+    # price match
+    df["price_match"] = (
+        df["range_price"] == price
+    ).astype(int)
+
+    # dine match
     if dine == "both":
         df["dine_match"] = 1
     else:
@@ -36,31 +63,71 @@ def get_rekomendasi(menu, flavor, price, dine, rating, top_n=10):
             lambda x: 1 if x == dine or x == "both" else 0
         )
 
-    df["combined"] = (
+    # =====================================================
+    # 4. COMBINED SCORE
+    # =====================================================
+
+    df["combined_features"] = (
         df["similarity"] +
         df["rating_norm"] +
         df["price_match"] +
         df["dine_match"]
     ) / 4
 
-    # filtering
+    # =====================================================
+    # 5. FILTERING
+    # =====================================================
+
+    # filter rating
     df = df[df["avgRating"] >= rating]
 
-    if price:
+    # filter price
+    if price is not None:
         df = df[df["range_price"] == price]
 
+    # filter dine
     if dine != "both":
-        df = df[(df["dine_option"] == dine) | (df["dine_option"] == "both")]
+        df = df[
+            (df["dine_option"] == dine) |
+            (df["dine_option"] == "both")
+        ]
 
-    # ranking
+    # =====================================================
+    # 6. SORTING
+    # =====================================================
+
     df = df.sort_values(
-        by=["combined", "similarity", "avgRating"],
-        ascending=False
+        by=[
+            "combined_features",
+            "similarity",
+            "avgRating"
+        ],
+        ascending=[False, False, False]
     )
 
-    df = df.drop_duplicates("nama_tempat")
+    # hapus duplikat tempat
+    df = df.drop_duplicates(
+        subset="nama_tempat"
+    )
 
-    df = df.head(top_n).reset_index(drop=True)
+    # ambil top N
+    df = df.head(top_n)
+
+    # =====================================================
+    # 7. OUTPUT
+    # =====================================================
+
+    df = df.reset_index(drop=True)
+
     df["rank"] = df.index + 1
 
-    return df
+    return df[[
+        "rank",
+        "nama_tempat",
+        "recommended_menu",
+        "avgRating",
+        "range_price",
+        "dine_option",
+        "similarity",
+        "combined_features"
+    ]]
