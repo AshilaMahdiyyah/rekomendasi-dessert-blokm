@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # LOAD DATA & MODEL
 # =====================================================
 
-df_menu = pd.read_csv("dataset_final.csv")
+df_menu = pd.read_csv("dataset_final_1.csv")
 
 tfidf = joblib.load("tfidf.pkl")
 
